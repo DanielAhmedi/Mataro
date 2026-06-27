@@ -1,3 +1,4 @@
+```mermaid
 flowchart LR
   U[User/Browser] --> DJ[Django + DRF]
   DJ --> SS[FastAPI search-service]
