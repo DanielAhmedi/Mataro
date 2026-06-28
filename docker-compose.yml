@@ -1,0 +1,43 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  web: 
+    build:
+      context: ./search/web
+    env_file: .env
+    volumes:
+      - ./services/web:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+  search:
+    build:
+      context: ./services/search
+    env_file: .env
+    volumes:
+      - ./services/search:/app
+    ports:
+      - "8001:8001"
+    depends_on:
+      - postgres
+      - redis
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
+volumes:
+  pgdata:
+      
